@@ -1,0 +1,83 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Проверка скорости транспорта";
+}
+
+<div class="custom-align">
+    <h1>Проверка скорости транспорта</h1>
+    <div>
+        Выберите транспорт
+        <div>
+            <select id="dropdown"></select>
+        </div>
+    </div>
+    <br />
+    <div>
+        Введите скорость, до которой необходимо разогнаться
+        <div>
+            <input type="text" id="inputValue" />
+        </div>
+
+    </div>
+    <br />
+    <div>
+        <button onclick="sendPostRequest()">Рассчитать</button>
+    </div>
+    <div>
+        Результат:
+        <label id="responseLabel"></label>
+    </div>
+</div>
+<script>
+    function sendPostRequest() {
+        var selectedOption = document.getElementById("dropdown").value;
+        var inputValue = document.getElementById("inputValue").value;
+        console.log(inputValue)
+        if (isNaN(inputValue) || inputValue == '') {
+            alert("Please enter a valid number");
+            return;
+        }
+        console.log(selectedOption)
+        fetch(`/api/vehicles/checkspeed/${inputValue}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: selectedOption
+        })
+            .then(response => response.text())
+            .then(data => {
+                if (data == 'true') {
+                    document.getElementById("responseLabel").textContent = 'Удачно';
+                    document.getElementById("responseLabel").style.color = "green"
+                    return;
+                }
+                document.getElementById("responseLabel").textContent = 'Неудачно';
+                document.getElementById("responseLabel").style.color = "red"
+            });
+    }
+
+    function getItemsFromApi() {
+        fetch('/api/vehicles/getvehicles')
+            .then(response => response.json())
+            .then(data => {
+                var dropdown = document.getElementById("dropdown");
+                data.forEach(item => {
+                    var option = document.createElement("option");
+                    option.text = item.name;
+                    option.value = JSON.stringify(item);
+                    console.log(option)
+                    dropdown.appendChild(option);
+                });
+            });
+    }
+
+    // Вызывается при загрузке страницы для получения элементов из API
+    getItemsFromApi();
+</script>
+<style>
+    .custom-align {
+        text-align: left;
+    }
+</style>
